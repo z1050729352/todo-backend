@@ -1,6 +1,7 @@
 const express = require('express');
 const connectDB = require('./db')
 const Todo = require('./models/Todo');
+const Score = require('./models/Score');
 const cors = require('cors');
 
 const app = express();
@@ -54,6 +55,68 @@ app.delete('/api/todos/:id', async (req, res) => {
         res.status(500).json({ error: error.message })
     }
 })
+
+// 飞机大战排行榜API
+// 提交分数
+app.post('/api/scores', async (req, res) => {
+    try {
+        const { playerName, score, difficulty } = req.body;
+        
+        if (!playerName || score === undefined || !difficulty) {
+            return res.status(400).json({ error: '缺少必要参数' });
+        }
+        
+        const newScore = new Score({
+            playerName,
+            score,
+            difficulty
+        });
+        
+        await newScore.save();
+        res.status(201).json(newScore);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// 获取排行榜（支持按难度筛选）
+app.get('/api/scores', async (req, res) => {
+    try {
+        const { difficulty, limit = 50 } = req.query;
+        
+        const query = difficulty ? { difficulty } : {};
+        
+        const scores = await Score.find(query)
+            .sort({ score: -1, createdAt: -1 })
+            .limit(parseInt(limit));
+        
+        res.json(scores);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 获取玩家排名
+app.get('/api/scores/rank/:id', async (req, res) => {
+    try {
+        const score = await Score.findById(req.params.id);
+        if (!score) {
+            return res.status(404).json({ error: '分数记录未找到' });
+        }
+        
+        const rank = await Score.countDocuments({
+            difficulty: score.difficulty,
+            $or: [
+                { score: { $gt: score.score } },
+                { score: score.score, createdAt: { $lt: score.createdAt } }
+            ]
+        }) + 1;
+        
+        res.json({ rank, total: await Score.countDocuments({ difficulty: score.difficulty }) });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 app.listen(12580, () => {
     console.log('12580一按我帮您 端口开启！')
