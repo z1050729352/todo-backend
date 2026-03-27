@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 async function connectDB() {
     try {
-        const mongoUrl = process.env.MONGODB_URL || 'mongodb://localhost:27017/planegame';
+        const mongoUrl = process.env.MONGODB_URL || process.env.MONGODB_URI || process.env.MONGO_URL || 'mongodb://localhost:27017/planegame';
         await mongoose.connect(mongoUrl);
         console.log('数据库连接成功');
     } catch (error) {

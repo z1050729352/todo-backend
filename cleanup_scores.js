@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 const Score = require('./models/Score');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
-const MONGO_URL = process.env.MONGODB_URL || 'mongodb://localhost:27017/planegame';
+const MONGO_URL = process.env.MONGODB_URL || process.env.MONGODB_URI || process.env.MONGO_URL || 'mongodb://localhost:27017/planegame';
 
 async function cleanupOldScores() {
     try {
