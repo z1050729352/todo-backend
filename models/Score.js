@@ -6,6 +6,11 @@ const scoreSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false // 允许旧数据暂时为空
+    },
     score: {
         type: Number,
         required: true,
