@@ -17,6 +17,10 @@ connectDB();
 app.use(express.json())
 app.use(cors())
 
+app.get('/health', (req, res) => {
+    res.json({ ok: true });
+});
+
 // --- 用户认证 API ---
 
 app.get('/api/auth/check-username', async (req, res) => {
