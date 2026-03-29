@@ -19,6 +19,17 @@ app.use(cors())
 
 // --- 用户认证 API ---
 
+app.get('/api/auth/check-username', async (req, res) => {
+    try {
+        const username = (req.query.username || '').toString().trim();
+        if (!username) return res.status(400).json({ error: '缺少 username' });
+        const existingUser = await User.exists({ username });
+        return res.json({ exists: Boolean(existingUser) });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+});
+
 // 注册
 app.post('/api/auth/register', async (req, res) => {
     try {
@@ -154,6 +165,7 @@ app.get('/api/todos', authMiddleware, async (req, res) => {
     }
 });
 
-app.listen(12580, () => {
-    console.log('12580一按我帮您 端口开启！')
-})
+const port = Number(process.env.PORT) || 12580;
+app.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+});
