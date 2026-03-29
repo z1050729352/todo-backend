@@ -186,6 +186,10 @@ app.get('/api/todos', authMiddleware, async (req, res) => {
 });
 
 const port = Number(process.env.PORT) || 12580;
-app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+const host = process.env.HOST || '0.0.0.0';
+const server = app.listen(port, host, () => {
+    console.log(`Server listening on http://${host}:${port}`);
+});
+server.on('error', (err) => {
+    console.error('Server error', err);
 });
