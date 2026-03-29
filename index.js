@@ -5,12 +5,21 @@ const connectDB = require('./db')
 const Todo = require('./models/Todo');
 const Score = require('./models/Score');
 const User = require('./models/User');
+const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authMiddleware = require('./authMiddleware');
 
 const app = express();
+
+process.on('unhandledRejection', (reason) => {
+    console.error('UnhandledRejection', reason);
+});
+process.on('uncaughtException', (err) => {
+    console.error('UncaughtException', err);
+    process.exit(1);
+});
 
 connectDB();
 
@@ -19,6 +28,13 @@ app.use(cors())
 
 app.get('/health', (req, res) => {
     res.json({ ok: true });
+});
+
+app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') return next();
+    if (!req.path.startsWith('/api')) return next();
+    if (mongoose.connection.readyState === 1) return next();
+    return res.status(503).json({ error: '数据库未连接，请稍后重试' });
 });
 
 // --- 用户认证 API ---
