@@ -130,8 +130,8 @@ app.post('/api/auth/login', async (req, res) => {
 // 提交分数 (受保护)
 app.post('/api/scores', authMiddleware, async (req, res) => {
     try {
-        const { score, difficulty, gameType } = req.body;
-        const playerName = req.user.username; 
+        const { score, difficulty, gameType, customPlayerName } = req.body;
+        const playerName = customPlayerName || req.user.username; 
         const userId = req.user.id; // 从 JWT 中获取用户 ID
         
         if (score === undefined || !difficulty) {
