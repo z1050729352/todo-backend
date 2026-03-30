@@ -21,6 +21,11 @@ const scoreSchema = new mongoose.Schema({
         enum: ['easy', 'medium', 'hard'],
         required: true
     },
+    gameType: {
+        type: String,
+        required: true,
+        default: 'plane-war'
+    },
     createdAt: {
         type: Date,
         default: Date.now
