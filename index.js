@@ -130,12 +130,32 @@ app.post('/api/auth/login', async (req, res) => {
 // 提交分数 (受保护)
 app.post('/api/scores', authMiddleware, async (req, res) => {
     try {
-        const { score, difficulty, gameType, customPlayerName } = req.body;
+        const { score, difficulty, gameType, customPlayerName, gameMode, duel } = req.body;
         const playerName = customPlayerName || req.user.username; 
         const userId = req.user.id; // 从 JWT 中获取用户 ID
         
         if (score === undefined || !difficulty) {
             return res.status(400).json({ error: '缺少必要参数' });
+        }
+
+        const mode = gameMode === 'duel' ? 'duel' : 'solo';
+        let duelData = undefined;
+        if (mode === 'duel') {
+            if (!duel || typeof duel !== 'object') {
+                return res.status(400).json({ error: '缺少对战数据' });
+            }
+            const aScore = Number(duel.aScore);
+            const bScore = Number(duel.bScore);
+            if (!Number.isFinite(aScore) || !Number.isFinite(bScore) || aScore < 0 || bScore < 0) {
+                return res.status(400).json({ error: '对战分数不合法' });
+            }
+            duelData = {
+                aName: duel.aName || 'A',
+                bName: duel.bName || 'B',
+                aScore,
+                bScore,
+                replay: duel.replay
+            };
         }
         
         const newScore = new Score({ 
@@ -143,6 +163,8 @@ app.post('/api/scores', authMiddleware, async (req, res) => {
             userId, // 保存 userId，用于区分已鉴权数据
             score, 
             difficulty,
+            gameMode: mode,
+            duel: duelData,
             gameType: gameType || 'plane-war'
         });
         await newScore.save();
@@ -155,10 +177,11 @@ app.post('/api/scores', authMiddleware, async (req, res) => {
 // 获取排行榜
 app.get('/api/scores', async (req, res) => {
     try {
-        const { difficulty, gameType, limit = 50 } = req.query;
+        const { difficulty, gameType, gameMode, limit = 50 } = req.query;
         const query = {};
         if (difficulty) query.difficulty = difficulty;
         if (gameType) query.gameType = gameType;
+        if (gameMode) query.gameMode = gameMode;
         
         const scores = await Score.find(query)
             .sort({ score: -1, createdAt: -1 })
@@ -178,13 +201,14 @@ app.get('/api/scores/rank/:id', async (req, res) => {
         const rank = await Score.countDocuments({
             difficulty: score.difficulty,
             gameType: score.gameType,
+            gameMode: score.gameMode || 'solo',
             $or: [
                 { score: { $gt: score.score } },
                 { score: score.score, createdAt: { $lt: score.createdAt } }
             ]
         }) + 1;
         
-        res.json({ rank, total: await Score.countDocuments({ difficulty: score.difficulty, gameType: score.gameType }) });
+        res.json({ rank, total: await Score.countDocuments({ difficulty: score.difficulty, gameType: score.gameType, gameMode: score.gameMode || 'solo' }) });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -367,6 +391,10 @@ io.on('connection', (socket) => {
         // Broadcast start to everyone in the room
         const seed = Date.now();
         io.to(roomId).emit('start_multiplayer_game', { ...settings, seed });
+    });
+
+    socket.on('reject_game_settings', ({ roomId }) => {
+        socket.to(roomId).emit('game_settings_rejected', { username: socket.username });
     });
 
     socket.on('reject_invite', ({ fromUserId }) => {

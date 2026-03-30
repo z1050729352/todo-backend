@@ -21,6 +21,18 @@ const scoreSchema = new mongoose.Schema({
         enum: ['easy', 'medium', 'hard'],
         required: true
     },
+    gameMode: {
+        type: String,
+        enum: ['solo', 'duel'],
+        default: 'solo'
+    },
+    duel: {
+        aName: { type: String, trim: true },
+        bName: { type: String, trim: true },
+        aScore: { type: Number, min: 0 },
+        bScore: { type: Number, min: 0 },
+        replay: { type: mongoose.Schema.Types.Mixed }
+    },
     gameType: {
         type: String,
         required: true,
@@ -34,5 +46,6 @@ const scoreSchema = new mongoose.Schema({
 
 // 创建索引以优化排行榜查询
 scoreSchema.index({ score: -1, createdAt: -1 });
+scoreSchema.index({ gameMode: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Score', scoreSchema);
