@@ -4,18 +4,16 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "prestart": "node ../check-version.js",
         "start": "node index.js",
         "test": "echo \"Error: no test specified\" && exit 1",
         "migrate:scores": "node migrate_scores.js",
-        "predev": "node ../check-version.js",
         "dev": "nodemon index.js"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "engines": {
-        "node": ">=22.0.0"
+        "node": "22.x"
     },
     "dependencies": {
         "bcryptjs": "^3.0.3",
