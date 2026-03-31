@@ -1,0 +1,43 @@
+@startuml
+title Room State Machine
+
+state "Room" as Room {
+  [*] --> Created : accept_invite
+
+  Created --> Waiting : room_state broadcast
+
+  Waiting --> Configured : Host setGame
+  Configured --> Configured : Host setGame (update)
+
+  Waiting --> Waiting : Player reconnect/rejoin
+  Configured --> Configured : Player reconnect/rejoin
+
+  Configured --> ReadyCheck : Guest ready=true
+  ReadyCheck --> Configured : Guest ready=false
+  ReadyCheck --> ReadyCheck : Guest ready toggle
+
+  ReadyCheck --> Starting : Host start (all guests ready)
+  Starting --> Playing : after 3s loading
+
+  Playing --> Ended : opponent_disconnected / leave_room
+
+  Waiting --> Disbanded : all players leave
+  Configured --> Disbanded : all players leave
+  ReadyCheck --> Disbanded : all players leave
+  Starting --> Disbanded : all players leave
+}
+
+Created : roomId/hostId/players created
+Waiting : waiting host selection
+Configured : gameType/settings selected
+ReadyCheck : guests ready gating
+Starting : room_game_start emitted
+Playing : game scene active
+Ended : game over
+Disbanded : room removed
+
+note right of ReadyCheck
+  canStart = all non-host players ready
+end note
+
+@enduml
