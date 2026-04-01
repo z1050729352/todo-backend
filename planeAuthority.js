@@ -183,8 +183,8 @@ function handleEnemyKilled(state, { enemyId, x, y, difficulty = 'medium' }) {
   const id = String(enemyId ?? '');
   if (!id) return [];
 
-  // 根据难度调整整体掉落概率，目前减半处理 (简单0.22, 中等0.17, 困难0.12)
-  const dropChance = difficulty === 'easy' ? 0.22 : (difficulty === 'hard' ? 0.12 : 0.17);
+  // 联机掉落统一按低难度档
+  const dropChance = 0.06;
 
   const drops = [];
   for (const [playerId, playerState] of state.players.entries()) {
@@ -200,18 +200,26 @@ function handleEnemyKilled(state, { enemyId, x, y, difficulty = 'medium' }) {
     let dropType = null;
     // 属性类 > 子弹类 > 特别道具
     // 属性类 (约 45%)
-    if (weightR < 0.15) dropType = 'RAPID';
-    else if (weightR < 0.30) dropType = 'SPREAD';
-    else if (weightR < 0.45) dropType = 'PIERCE';
-    // 子弹类/特别道具 (约 30%)
-    else if (weightR < 0.55) dropType = 'EXPLOSIVE';
-    else if (weightR < 0.65) dropType = 'LASER';
-    else if (weightR < 0.75) dropType = 'BURST';
-    // 强化/恢复/防守类 (约 25%)
-    else if (weightR < 0.85) dropType = 'BOOST';
-    else if (weightR < 0.92) dropType = 'HEALTH';
-    else if (weightR < 0.97) dropType = 'SHIELD';
-    else dropType = 'BARRIER';
+    if (weightR < 0.1) dropType = 'RAPID';
+    else if (weightR < 0.2) dropType = 'SPREAD';
+    else if (weightR < 0.3) dropType = 'PIERCE';
+    else if (weightR < 0.4) dropType = 'MISSILE_PODS';
+    else if (weightR < 0.46) dropType = 'EXPLOSIVE';
+    else if (weightR < 0.52) dropType = 'LASER';
+    else if (weightR < 0.58) dropType = 'BURST';
+    else if (weightR < 0.62) dropType = 'PULSE';
+    else if (weightR < 0.66) dropType = 'NEEDLE';
+    else if (weightR < 0.72) dropType = 'ION';
+    else if (weightR < 0.76) dropType = 'BOOST';
+    else if (weightR < 0.8) dropType = 'HEALTH';
+    else if (weightR < 0.85) dropType = 'SHIELD';
+    else if (weightR < 0.9) dropType = 'BARRIER';
+    else if (weightR < 0.91) dropType = 'PLANE';
+    else if (weightR < 0.92) dropType = 'LIGHTNING';
+    else if (weightR < 0.94) dropType = 'GRAVITY_WELL';
+    else if (weightR < 0.96) dropType = 'EMP';
+    else if (weightR < 0.98) dropType = 'UPDRAFT';
+    else dropType = 'SHRAPNEL_STORM';
 
     if (dropType) {
       drops.push({
