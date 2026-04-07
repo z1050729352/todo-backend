@@ -522,13 +522,14 @@ app.post('/api/room/start', authMiddleware, (req, res) => {
     const seed = Date.now();
     room.seed = seed;
     room.startedAt = Date.now();
+    room.startAt = room.startedAt + 3500;
     if (room.gameType === 'plane-war') {
         room.planeState = createPlaneRoomState({ roomId: rid, roomSeed: seed, hostId: room.hostId, players: room.players });
     } else {
         room.planeState = null;
     }
     touchRoom(room);
-    const payload = { roomId: rid, gameType: room.gameType, settings: room.settings || { gameType: room.gameType }, seed };
+    const payload = { roomId: rid, gameType: room.gameType, settings: room.settings || { gameType: room.gameType }, seed, startAt: room.startAt };
     io.to(rid).emit('room_game_start', payload);
     io.to(rid).emit('start_multiplayer_game', { ...(payload.settings || {}), gameType: room.gameType, seed });
     return res.json({ ok: true, seed });
