@@ -5,23 +5,36 @@ mongoose.set('bufferTimeoutMS', 0);
 
 async function connectDB() {
     try {
-        const mongoUrl = process.env.MONGODB_URL || process.env.MONGODB_URI || process.env.MONGO_URL || 'mongodb://localhost:27017/planegame';
-        const hasExplicitMongoUrl = Boolean(process.env.MONGODB_URL || process.env.MONGODB_URI || process.env.MONGO_URL);
-        if (!hasExplicitMongoUrl && process.env.NODE_ENV === 'production') {
-            console.log('未检测到 MONGODB_URL/MONGODB_URI/MONGO_URL，当前使用默认本地 Mongo 地址');
-        }
-        await mongoose.connect(mongoUrl);
+        const mongoUrl = process.env.MONGODB_URL
+            || process.env.MONGODB_URI
+            || process.env.MONGO_URL
+            || 'mongodb://localhost:27017/planegame';
+
+        await mongoose.connect(mongoUrl, {
+            // 连接池：1GB 内存的服务器，5 个连接够用
+            maxPoolSize: 5,
+            minPoolSize: 1,
+            // 连接超时
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 30000,
+            // 心跳检测
+            heartbeatFrequencyMS: 10000,
+        });
+
         console.log('数据库连接成功');
+
         mongoose.connection.on('disconnected', () => {
-            console.log('数据库连接已断开');
+            console.log('数据库连接已断开，等待自动重连...');
+        });
+        mongoose.connection.on('reconnected', () => {
+            console.log('数据库已重连');
         });
         mongoose.connection.on('error', (err) => {
-            console.error('数据库连接异常', err);
+            console.error('数据库连接异常', err.message);
         });
     } catch (error) {
-        console.error('数据库连接失败', error);
-        console.log('继续运行服务器，但数据库功能不可用');
-        // 不退出进程，允许服务器继续运行
+        console.error('数据库连接失败:', error.message);
+        console.log('服务器继续运行，数据库功能暂不可用');
     }
 }
 

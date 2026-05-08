@@ -1,6 +1,7 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
+const compression = require('compression');
 const connectDB = require('./db')
 const Todo = require('./models/Todo');
 const Score = require('./models/Score');
@@ -111,6 +112,8 @@ connectDB();
 
 app.use(express.json())
 app.use(cors())
+// gzip 压缩（对 JSON API 响应效果显著，通常压缩 60-80%）
+app.use(compression({ threshold: 512 }))
 
 app.get('/health', (req, res) => {
     res.json({ ok: true });
