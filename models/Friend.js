@@ -26,3 +26,4 @@ const friendSchema = new mongoose.Schema({
 friendSchema.index({ requester: 1, recipient: 1 }, { unique: true });
 
 module.exports = mongoose.model('Friend', friendSchema);
+// 测试一下宝塔自动部署
