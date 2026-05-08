@@ -115,12 +115,15 @@ app.use(cors())
 // gzip 压缩（对 JSON API 响应效果显著，通常压缩 60-80%）
 app.use(compression({ threshold: 512 }))
 
+// 服务启动时间戳，每次重启自动变化
+const SERVER_START_TIME = Date.now();
+
 app.get('/health', (req, res) => {
-    res.json({ ok: true, ver: 1 });
+    res.json({ ok: true, ver: String(SERVER_START_TIME).slice(-6) });
 });
 
 app.get('/api/health', (req, res) => {
-    res.json({ ok: true, ver: 1 });
+    res.json({ ok: true, ver: String(SERVER_START_TIME).slice(-6) });
 });
 
 app.use((req, res, next) => {
