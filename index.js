@@ -119,6 +119,10 @@ app.get('/health', (req, res) => {
     res.json({ ok: true, ver: 1 });
 });
 
+app.get('/api/health', (req, res) => {
+    res.json({ ok: true, ver: 1 });
+});
+
 app.use((req, res, next) => {
     if (req.method === 'OPTIONS') return next();
     if (!req.path.startsWith('/api')) return next();
