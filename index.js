@@ -116,7 +116,7 @@ app.use(cors())
 app.use(compression({ threshold: 512 }))
 
 app.get('/health', (req, res) => {
-    res.json({ ok: true });
+    res.json({ ok: true, ver: 1 });
 });
 
 app.use((req, res, next) => {
